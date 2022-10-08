@@ -27,43 +27,46 @@ class Stats(QObject):
     def __init__(self, location: str):
         super().__init__()
         self.file_path = location
-        self.record = None
+        self.records = {}
 
-    def get_record(self) -> Optional[Record]:
-        return self.record
+    def get_records(self):
+        return self.records
 
     def set_record(self, contenders: bool, min_watched: int, title: str, accountid: str):
-        self.record = Record(contenders, min_watched, title, accountid)
+        self.records[accountid] = Record(contenders, min_watched, title, accountid)
         self.changed.emit()
 
-    def write_record(self):
-        if self.record:
-            logger.info("Writting history record")
-            self._write()
-            self.record = None
+    def write_records(self):
+        if len(self.records) > 0:
+            logger.info("Writting history records")
+            for record in self.records.values():
+                self._write(record)
+
+            self.records = {}
             self.changed.emit()
 
-    def _write(self):
-        if os.path.isfile(self.file_path):
+    def _write(self, record):
+        self.file_path.format(record.accountid)
+        if os.path.isfile(file_path):
             write_header = False
             write_mode = 'a'
         else:
             write_header = True
             write_mode = 'w'
 
-        contenders = 'owc' if self.record.contenders else 'owl'
+        contenders = 'owc' if record.contenders else 'owl'
         timestamp = datetime.now().astimezone().isoformat()
 
-        with open(self.file_path, write_mode) as f:
+        with open(file_path, write_mode) as f:
             writer = csv.writer(f)
             if write_header:
                 writer.writerow(['Timestamp', 'Account', 'Type', 'Title', 'Minutes'])
             writer.writerow([
                 timestamp,
-                self.record.accountid,
+                record.accountid,
                 contenders,
-                self.record.title,
-                self.record.min_watched
+                record.title,
+                record.min_watched
             ])
 
 

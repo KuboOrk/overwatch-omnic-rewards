@@ -12,17 +12,17 @@ logger = logging.getLogger(__name__)
 
 
 class CheckViewer(QObject):
-    check_progress = pyqtSignal(int)
+    check_progress = pyqtSignal(int, str)
     checking = pyqtSignal()
-    watching_owl = pyqtSignal(int, str, bool)
-    watching_owc = pyqtSignal(int, str, bool)
+    watching_owl = pyqtSignal(str, int, str, bool)
+    watching_owc = pyqtSignal(str, int, str, bool)
     error = pyqtSignal(str, bool)
     false_tracking = pyqtSignal(bool)
     exit_signal = pyqtSignal()
 
     def __init__(self, userid=None, owl_flag=True, owc_flag=True, min_check=10, force_rewards=False):
         super().__init__()
-        logger.info("Starting checkviewer")
+        logger.info(f"{userid}: Starting checkviewer")
 
         self.check_counter = 0
         self.min_check = min_check
@@ -52,7 +52,7 @@ class CheckViewer(QObject):
         else:
             self.owl_flag = False
             if self.watcher_timer.isActive() and not self.contenders:
-                self.watching_owl.emit(self.viewer.time_watched, self.viewer_title, True)
+                self.watching_owl.emit(self.userid, self.viewer.time_watched, self.viewer_title, True)
                 self.start_check_timer(check=False)
 
     @pyqtSlot(bool)
@@ -65,7 +65,7 @@ class CheckViewer(QObject):
         else:
             self.owc_flag = False
             if self.watcher_timer.isActive() and self.contenders:
-                self.watching_owc.emit(self.viewer.time_watched, self.viewer_title, True)
+                self.watching_owc.emit(self.userid, self.viewer.time_watched, self.viewer_title, True)
                 self.start_check_timer(check=False)
 
     @pyqtSlot(str)
@@ -100,38 +100,38 @@ class CheckViewer(QObject):
             self.check_if_live()
         else:
             self.check_counter += 1
-            self.check_progress.emit(self.min_check - self.check_counter)
+            self.check_progress.emit(self.min_check - self.check_counter, self.userid)
 
     def check_if_live(self):
-        logger.info("Checking if live")
+        logger.info(f"{self.userid}: Checking if live")
         self.checking.emit()
         try:
             if self.owl_flag and (video_player_owl := checker.check_page_islive(contenders=False, ignore_rewards=self.force_rewards)):
-                logger.info("OWL is Live")
+                logger.info(f"{self.userid}: OWL is Live")
                 self.start_watching(video_player_owl, False)
             elif self.owc_flag and (video_player_owc := checker.check_page_islive(contenders=True, ignore_rewards=self.force_rewards)):
-                logger.info("OWC is live")
+                logger.info(f"{self.userid}: OWC is live")
                 self.start_watching(video_player_owc, True)
             else:
-                self.check_progress.emit(self.min_check)
+                self.check_progress.emit(self.min_check, self.userid)
         except requests.exceptions.Timeout as errt:
-            logger.error("Checker Timeout error")
-            self.error.emit("Checker timeout'ed", False)
+            logger.error(f"{self.userid}: Checker Timeout error")
+            self.error.emit(f"{self.userid}: Checker timeout'ed", False)
         except requests.exceptions.HTTPError as errh:
-            logger.error("Checker HTTP error - {errh.response.status_code}")
-            self.error.emit(f"Checker HTTP error - {errh.response.status_code}", True)
+            logger.error(f"{self.userid}: Checker HTTP error - {errh.response.status_code}")
+            self.error.emit(f"{self.userid}: Checker HTTP error - {errh.response.status_code}", True)
         except requests.exceptions.ConnectionError as errc:
-            logger.error("Checker ConnectionError")
-            self.error.emit("Couldn't connect - Check internet", False)
+            logger.error(f"{self.userid}: Checker ConnectionError")
+            self.error.emit(f"{self.userid}: Couldn't connect - Check internet", False)
         except requests.exceptions.RequestException as err:
-            logger.error(f"Checker Requests error - {err}")
-            self.error.emit("Unknown error (requests). Check Logs", True)
+            logger.error(f"{self.userid}: Checker Requests error - {err}")
+            self.error.emit(f"{self.userid}: Unknown error (requests). Check Logs", True)
         except Exception as e:
-            logger.error(f"Checker Exception - {e}")
-            self.error.emit("OWL/OWC Page incorrectly formatted/error", True)
+            logger.error(f"{self.userid}: Checker Exception - {e}")
+            self.error.emit(f"{self.userid}: OWL/OWC Page incorrectly formatted/error", True)
 
     def start_watching(self, video_player, contenders=False):
-        logger.info("Start Watching")
+        logger.info(f"{self.userid}: Start Watching")
         # Stop checker QTimer
         self.check_timer.stop()
 
@@ -146,62 +146,62 @@ class CheckViewer(QObject):
 
     @pyqtSlot()
     def watch(self):
-        logger.info("Sending sentinel packets")
+        logger.info(f"{self.userid}: Sending sentinel packets")
         try:
             tracking_status = self.viewer.send_sentinel_packets()
         except requests.exceptions.Timeout as errt:
-            logger.error("Watcher Timeout error")
-            self.error.emit("Watcher timeout'ed", False)
+            logger.error(f"{self.userid}: Watcher Timeout error")
+            self.error.emit(f"{self.userid}: Watcher timeout'ed", False)
             self.viewer.restart_session()
             self.viewer.time_watched = 0
         except requests.exceptions.HTTPError as errh:
-            logger.error(f"Watcher HTTP error - {errh.response.status_code}")
-            self.error.emit(f"Watcher HTTP error - {errh.response.status_code}", True)
+            logger.error(f"{self.userid}: Watcher HTTP error - {errh.response.status_code}")
+            self.error.emit(f"{self.userid}: Watcher HTTP error - {errh.response.status_code}", True)
             self.watcher_timer.stop()
             self.start_check_timer(check=False)
         except requests.exceptions.ConnectionError as errc:
-            logger.error("Watcher ConnectionError")
-            self.error.emit("Couldn't connect - Check internet", False)
+            logger.error(f"{self.userid}: Watcher ConnectionError")
+            self.error.emit(f"{self.userid}: Couldn't connect - Check internet", False)
             self.watcher_timer.stop()
             self.start_check_timer(check=True)
         except requests.exceptions.RequestException as err:
-            logger.error(f"Watcher Requests error - {err}")
-            self.error.emit("Unknown error (requests). Check Logs", True)
+            logger.error(f"{self.userid}: Watcher Requests error - {err}")
+            self.error.emit(f"{self.userid}: Unknown error (requests). Check Logs", True)
             self.watcher_timer.stop()
             self.start_check_timer(check=False)
         except ViewerStatusCodeError as e:
-            logger.error(f"Watcher Bad API Response - {e.response}")
-            self.error.emit("Bad response from API. Check Logs", True)
+            logger.error(f"{self.userid}: Watcher Bad API Response - {e.response}")
+            self.error.emit(f"{self.userid}: Bad response from API. Check Logs", True)
             self.watcher_timer.stop()
             self.start_check_timer(check=False)
         except Exception as e:
-            logger.error(f"Watcher Exception - {e}")
-            self.error.emit("Unknown error (watcher). Check Logs", True)
+            logger.error(f"{self.userid}: Watcher Exception - {e}")
+            self.error.emit(f"{self.userid}: Unknown error (watcher). Check Logs", True)
             self.watcher_timer.stop()
             self.start_check_timer(check=False)
         else:
             if tracking_status:
                 if self.contenders:
-                    self.watching_owc.emit(self.viewer.time_watched, self.viewer_title, False)
+                    self.watching_owc.emit(self.userid, self.viewer.time_watched, self.viewer_title, False)
                 else:
-                    self.watching_owl.emit(self.viewer.time_watched, self.viewer_title, False)
+                    self.watching_owl.emit(self.userid, self.viewer.time_watched, self.viewer_title, False)
                 self.viewer.time_watched += 1
             elif self.viewer.time_watched:
                 self.watcher_timer.stop()
                 if self.contenders:
-                    self.watching_owc.emit(self.viewer.time_watched, self.viewer_title, True)
+                    self.watching_owc.emit(self.userid, self.viewer.time_watched, self.viewer_title, True)
                 else:
-                    self.watching_owl.emit(self.viewer.time_watched, self.viewer_title, True)
+                    self.watching_owl.emit(self.userid, self.viewer.time_watched, self.viewer_title, True)
                 self.start_check_timer(check=False)
             else:
-                logger.warning("Watched for 0 minutes. Stream has probably ended")
+                logger.warning(f"{self.userid}: Watched for 0 minutes. Stream has probably ended")
                 self.false_tracking.emit(self.contenders)
                 self.start_check_timer(check=False)
                 pass
 
     @pyqtSlot(bool)
     def prepare_to_exit(self, exit_signal):
-        logger.info("Preparing to exit")
+        logger.info(f"{self.userid}: Preparing to exit")
         self.check_timer.stop()
         self.watcher_timer.stop()
         if exit_signal:

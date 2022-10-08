@@ -136,7 +136,7 @@ class SystemTray(QSystemTrayIcon):
         self.setIcon(self.icon_error)
         self.checknow_action.setEnabled(True)
         self.status_action.setText(f"Status: {error_msg}")
-        self.stats.write_record()
+        self.stats.write_records()
         if notification:
             self.showMessage(
                 "Error - OWL Omnic Rewards",
@@ -176,7 +176,7 @@ class SystemTray(QSystemTrayIcon):
             self.status_action.setText(f"Status: Watching OWL for {min_watching}min")
             logger.info(f"Watching OWL for {min_watching}min")
         else:
-            self.stats.write_record()
+            self.stats.write_records()
             self.showMessage("Watched Overwatch League",
                              f"Watched {min_watching}mins of {title}",
                              self.icon_owl, 10000)
@@ -199,7 +199,7 @@ class SystemTray(QSystemTrayIcon):
             self.status_action.setText(f"Status: Watching OWC for {min_watching}min")
             logger.info(f"Watching OWC for {min_watching}min")
         else:
-            self.stats.write_record()
+            self.stats.write_records()
             self.showMessage("Watched Overwatch Contenders",
                              f"Watched {min_watching}mins of {title}",
                              self.icon_owc,
@@ -233,7 +233,7 @@ class SystemTray(QSystemTrayIcon):
         logger.info("Setting account")
         account_id = self.account_dialog.get_userid()
         self.settings.set(key='account', value=account_id)
-        self.stats.write_record()
+        self.stats.write_records()
         QMetaObject.invokeMethod(
             self.check_viewer,
             'set_userid',
@@ -265,7 +265,7 @@ class SystemTray(QSystemTrayIcon):
     @pyqtSlot()
     def prepare_to_exit(self):
         logger.info("Preparing to exit")
-        self.stats.write_record()
+        self.stats.write_records()
         self.exit_signal.emit(True)
         if self.thread.isRunning():
             self.thread.quit()
@@ -300,21 +300,21 @@ class SystemTray(QSystemTrayIcon):
         elif action == Actions.context_menu:
             self.contextMenu().popup(QCursor.pos())
         elif action == Actions.open_youtube:
-            record = self.stats.get_record()
-            if record is None:
-                QDesktopServices.openUrl(QUrl(Urls.owl.youtube_channel))
-            elif not record.contenders:
-                QDesktopServices.openUrl(QUrl(Urls.owl.youtube_live))
-            elif record.contenders:
-                QDesktopServices.openUrl(QUrl(Urls.owc.youtube_live))
+            for record in self.stats.get_records():
+                if record is None:
+                    QDesktopServices.openUrl(QUrl(Urls.owl.youtube_channel))
+                elif not record.contenders:
+                    QDesktopServices.openUrl(QUrl(Urls.owl.youtube_live))
+                elif record.contenders:
+                    QDesktopServices.openUrl(QUrl(Urls.owc.youtube_live))
         elif action == Actions.open_owl_owc:
-            record = self.stats.get_record()
-            if record is None:
-                QDesktopServices.openUrl(QUrl(Urls.owl.main))
-            elif not record.contenders:
-                QDesktopServices.openUrl(QUrl(Urls.owl.main))
-            elif record.contenders:
-                QDesktopServices.openUrl(QUrl(Urls.owc.main))
+            for record in self.stats.get_records():
+                if record is None:
+                    QDesktopServices.openUrl(QUrl(Urls.owl.main))
+                elif not record.contenders:
+                    QDesktopServices.openUrl(QUrl(Urls.owl.main))
+                elif record.contenders:
+                    QDesktopServices.openUrl(QUrl(Urls.owc.main))
         elif action == Actions.test_action:
             self.showMessage("Example", "test")
         else:

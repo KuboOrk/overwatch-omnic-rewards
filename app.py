@@ -82,7 +82,7 @@ def arg_parse():
                         action="store_true")
     parser.add_argument("-cf", "--config", default="config.json",
                        help="Specify config file. Needs to be in the same dir as app")
-    parser.add_argument("-hf", "--history", default="history.csv",
+    parser.add_argument("-hf", "--history", default="history.{}.csv",
                        help="Specify history file. Needs to be in the same dir as app")
     parser.add_argument("-c", "--cli", help="Command Line mode. No system tray", action="store_true")
 

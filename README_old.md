@@ -131,7 +131,14 @@ docker build -t overwatch-omnic-rewards .
 
 Run the app inside docker container (Put your ID of your account instead of 123456789)
 ```bash
-docker run -d -e ACCOUNT_ID=123456789 overwatch-omnic-rewards
+docker run -d -e ACCOUNT_ID=\"123456789\" overwatch-omnic-rewards
+```
+
+Run the app inside docker container
+(with multiple ID of accounts: Put your ID of your account instead of 123456789 and 987654321)
+
+```bash
+docker run -d -e ACCOUNT_ID=\"123456789\",\"987654321\" overwatch-omnic-rewards
 ```
 
 ## Developing

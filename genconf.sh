@@ -8,7 +8,7 @@ fi
 # Save config file for specified account id
 cat > config.json << EOL
 {
-    "account": "${ACCOUNT_ID}",
+    "account": [${ACCOUNT_ID}],
     "owl": true,
     "owc": true,
     "middle_click": "open_owl_owc",
