@@ -46,7 +46,7 @@ class Stats(QObject):
             self.changed.emit()
 
     def _write(self, record):
-        self.file_path.format(record.accountid)
+        file_path = self.file_path.format(record.accountid)
         if os.path.isfile(file_path):
             write_header = False
             write_mode = 'a'
@@ -174,8 +174,9 @@ class StatsDialog(QDialog):
                     'Minutes': self.stats.record.min_watched
             })
 
-        if os.path.isfile(self.stats.file_path):
-            with open(self.stats.file_path, 'r', newline='') as history_file:
+        file_path = self.file_path.format(accountid)
+        if os.path.isfile(file_path):
+            with open(file_path, 'r', newline='') as history_file:
                 stats_data.extend(csv.DictReader(history_file))
                 logger.debug("Loaded history file")
 
