@@ -1,3 +1,5 @@
+import os
+import csv
 import logging
 from dataclasses import dataclass
 from datetime import datetime, timedelta
@@ -14,7 +16,7 @@ class Record:
     contenders: bool
     min_watched: int
     title: str
-    accountid: str
+    account_id: str
 
 
 class Stats(QObject):
@@ -162,13 +164,14 @@ class StatsDialog(QDialog):
         stats_data = []
 
         if self.stats.record:
-            stats_data.append({
+            stats_data.append(
+                {
                     'Timestamp': datetime.now().astimezone().isoformat(),
                     'Account': self.stats.record.account_id,
                     'Type': 'owc' if self.stats.record.contenders else 'owl',
                     'Title': self.stats.record.title,
                     'Minutes': self.stats.record.min_watched
-            })
+                })
 
         file_path = self.file_path.format(accountid)
         if os.path.isfile(file_path):
@@ -236,9 +239,8 @@ class StatsDialog(QDialog):
         self.inner_layout.itemAtPosition(7, 3).widget().setText(str(round(stats_owc[1] / 60, 2)) + "h")
         self.inner_layout.itemAtPosition(8, 3).widget().setText(str(round(stats_owc[2] / 60, 2)) + "h")
 
+
 if __name__ == "__main__":
-    global stats
-    import os, csv
     logging.basicConfig(level=logging.INFO)
 
     app = QApplication([])
@@ -246,8 +248,9 @@ if __name__ == "__main__":
     icon_owc = QIcon(os.path.join("icons", "iconowc.png"))
 
     test_accountid = "123456789"
-    stats = Stats('history.csv', icon_owl, icon_owc)
+    stats = Stats('history.123456789.csv', icon_owl, icon_owc)
     stats.set_record(contenders=True, min_watched=24, title="Fake OWL test", account_id=test_accountid)
     stats.show(test_accountid)
+    stats.write_records()
 
     app.exec_()
