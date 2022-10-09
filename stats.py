@@ -1,14 +1,10 @@
-from PyQt5.QtWidgets import *
-from PyQt5.QtGui import *
-from PyQt5.QtCore import *
-
-from datetime import datetime, timedelta
-from dataclasses import dataclass
-from typing import Optional
-import os
-import csv
-
 import logging
+from dataclasses import dataclass
+from datetime import datetime, timedelta
+
+from PyQt5.QtCore import *
+from PyQt5.QtGui import *
+from PyQt5.QtWidgets import *
 
 logger = logging.getLogger(__name__)
 
@@ -46,7 +42,7 @@ class Stats(QObject):
             self.changed.emit()
 
     def _write(self, record):
-        file_path = self.file_path.format(record.accountid)
+        file_path = self.file_path.format(record.account_id)
         if os.path.isfile(file_path):
             write_header = False
             write_mode = 'a'
@@ -63,7 +59,7 @@ class Stats(QObject):
                 writer.writerow(['Timestamp', 'Account', 'Type', 'Title', 'Minutes'])
             writer.writerow([
                 timestamp,
-                record.accountid,
+                record.account_id,
                 contenders,
                 record.title,
                 record.min_watched
@@ -168,7 +164,7 @@ class StatsDialog(QDialog):
         if self.stats.record:
             stats_data.append({
                     'Timestamp': datetime.now().astimezone().isoformat(),
-                    'Account': self.stats.record.accountid,
+                    'Account': self.stats.record.account_id,
                     'Type': 'owc' if self.stats.record.contenders else 'owl',
                     'Title': self.stats.record.title,
                     'Minutes': self.stats.record.min_watched
@@ -249,9 +245,9 @@ if __name__ == "__main__":
     icon_owl = QIcon(os.path.join("icons", "iconowl.png"))
     icon_owc = QIcon(os.path.join("icons", "iconowc.png"))
 
-    accountid = "123456789"
+    test_accountid = "123456789"
     stats = Stats('history.csv', icon_owl, icon_owc)
-    stats.set_record(contenders=True, min_watched=24, title="Fake OWL test", accountid='123456789')
-    stats.show(accountid)
+    stats.set_record(contenders=True, min_watched=24, title="Fake OWL test", account_id=test_accountid)
+    stats.show(test_accountid)
 
     app.exec_()
