@@ -48,7 +48,7 @@ class Stats(QObject):
 
     def write_records(self):
         if len(self.records) > 0:
-            logger.info("Writting history records")
+            logger.info("Writing history records")
             for record in self.records.values():
                 self._write(record)
 
