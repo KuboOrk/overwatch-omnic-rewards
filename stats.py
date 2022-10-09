@@ -30,8 +30,8 @@ class Stats(QObject):
     def get_records(self):
         return self.records
 
-    def set_record(self, contenders: bool, min_watched: int, title: str, accountid: str):
-        self.records[accountid] = Record(contenders, min_watched, title, accountid)
+    def set_record(self, contenders: bool, min_watched: int, title: str, account_id: str):
+        self.records[account_id] = Record(contenders, min_watched, title, account_id)
         self.changed.emit()
 
     def write_record(self, account_id=None):
