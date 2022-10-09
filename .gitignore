@@ -1,6 +1,6 @@
 # Application specific
 config.json
-history.csv
+*.csv
 requests/
 
 #Vscode and Pycharm
