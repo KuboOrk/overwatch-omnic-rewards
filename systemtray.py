@@ -54,6 +54,7 @@ class SystemTray(QSystemTrayIcon):
             self.checknow_action.setVisible(False)
             self.shutdown_action.setVisible(False)
         else:
+            # TODO multi account in ui
             self.account_action.setText(f"Account: {self.settings.get('account')}")
 
         if not quiet_mode:
@@ -104,6 +105,7 @@ class SystemTray(QSystemTrayIcon):
         self.setContextMenu(self.menu)
 
     def create_thread(self):
+        # TODO multi account in ui
         logger.info("Creating thread")
 
         self.thread = QThread()
@@ -165,9 +167,9 @@ class SystemTray(QSystemTrayIcon):
             self.status_action.setText("Status: Checking OWL/OWC page")
 
     @pyqtSlot(int, str, bool)
-    def update_watching_owl(self, min_watching, title, end):
+    def update_watching_owl(self, account_id, min_watching, title, end):
         self.setIcon(self.icon_owl)
-        self.stats.set_record(False, min_watching, title, self.settings.get('account'))
+        self.stats.set_record(False, min_watching, title, account_id)
         if not end:
             if min_watching == 0:
                 self.showMessage("Watching Overwatch League", title, self.icon_owl, 10000)
@@ -176,7 +178,7 @@ class SystemTray(QSystemTrayIcon):
             self.status_action.setText(f"Status: Watching OWL for {min_watching}min")
             logger.info(f"Watching OWL for {min_watching}min")
         else:
-            self.stats.write_records()
+            self.stats.write_record(account_id)
             self.showMessage("Watched Overwatch League",
                              f"Watched {min_watching}mins of {title}",
                              self.icon_owl, 10000)
@@ -188,9 +190,9 @@ class SystemTray(QSystemTrayIcon):
                 self.shutdown_flag = True
 
     @pyqtSlot(int, str, bool)
-    def update_watching_owc(self, min_watching, title, end):
+    def update_watching_owc(self, account_id, min_watching, title, end):
         self.setIcon(self.icon_owc)
-        self.stats.set_record(True, min_watching, title, self.settings.get('account'))
+        self.stats.set_record(True, min_watching, title, account_id)
         if not end:
             if min_watching == 0:
                 self.showMessage("Watching Overwatch Contenders", title, self.icon_owc, 10000)
@@ -199,7 +201,7 @@ class SystemTray(QSystemTrayIcon):
             self.status_action.setText(f"Status: Watching OWC for {min_watching}min")
             logger.info(f"Watching OWC for {min_watching}min")
         else:
-            self.stats.write_records()
+            self.stats.write_record(account_id)
             self.showMessage("Watched Overwatch Contenders",
                              f"Watched {min_watching}mins of {title}",
                              self.icon_owc,
@@ -230,10 +232,11 @@ class SystemTray(QSystemTrayIcon):
 
     @pyqtSlot()
     def save_account(self):
+        # TODO multi account in ui
         logger.info("Setting account")
         account_id = self.account_dialog.get_userid()
         self.settings.set(key='account', value=account_id)
-        self.stats.write_records()
+        self.stats.write_record(account_id)
         QMetaObject.invokeMethod(
             self.check_viewer,
             'set_userid',
@@ -248,6 +251,7 @@ class SystemTray(QSystemTrayIcon):
 
     @pyqtSlot()
     def show_stats(self):
+        # TODO multi account in ui
         self.stats_dialog.show_dialog(self.settings.get('account'))
 
     @pyqtSlot()

@@ -34,6 +34,18 @@ class Stats(QObject):
         self.records[accountid] = Record(contenders, min_watched, title, accountid)
         self.changed.emit()
 
+    def write_record(self, account_id=None):
+        if account_id is not None:
+            record = self.records.get(account_id)
+            if record is not None:
+                logger.info("Writing history record: " + account_id)
+                self._write(record)
+                self.records.pop(account_id)
+            else:
+                logger.warning("No history record by " + account_id)
+
+            self.changed.emit()
+
     def write_records(self):
         if len(self.records) > 0:
             logger.info("Writting history records")

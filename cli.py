@@ -54,7 +54,7 @@ class CLIApp(QObject):
         if not end:
             logger.info(f"{accountId}: Watching OWL for {min_watching}min")
         else:
-            self.stats.write_records()
+            self.stats.write_record(accountId)
             logger.info(f"{accountId}: Watched {min_watching}mins of OWL - {title}")
 
     @pyqtSlot(str, int, str, bool)
@@ -63,7 +63,7 @@ class CLIApp(QObject):
         if not end:
             logger.info(f"{accountId}: Watching OWC for {min_watching}min")
         else:
-            self.stats.write_records()
+            self.stats.write_record(accountId)
             logger.info(f"{accountId}: Watched {min_watching}mins of OWC - {title}")
 
     @pyqtSlot(str, bool)
