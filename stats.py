@@ -260,9 +260,10 @@ if __name__ == "__main__":
     icon_owc = QIcon(os.path.join("icons", "iconowc.png"))
 
     test_accountid = "123456789"
-    stats = Stats('history.123456789.csv', icon_owl, icon_owc)
+    stats = Stats('history.123456789.csv')
     stats.set_record(contenders=True, min_watched=24, title="Fake OWL test", account_id=test_accountid)
-    stats.show(test_accountid)
+    stats.write_record(test_accountid)
+    stats.set_record(contenders=True, min_watched=24, title="Fake OWL test", account_id=test_accountid)
     stats.write_records()
 
     app.exec_()
