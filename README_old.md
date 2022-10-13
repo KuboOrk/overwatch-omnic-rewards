@@ -136,17 +136,15 @@ OR
 
 1. Clone the repository
 2. Install Python (3.10 recommended) and then pipenv
-
-```shell
-pip install pipenv
-```
+    ```shell
+    pip install pipenv
+    ```
 
 3. Run the app under pipenv environment
-
-```shell
-pipenv install
-pipenv run python app.py
-```
+    ```shell
+    pipenv install
+    pipenv run python app.py
+    ```
 
 ### Docker
 

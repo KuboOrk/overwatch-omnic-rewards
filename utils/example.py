@@ -1,12 +1,13 @@
-import time, sys
+import sys
+import time
 
 import checker as checker
 from viewer import Viewer
 
-
 ACCOUNT_ID = 123456789
 MIN_BETWEEN_CHECKS = 10
 CONTENDERS_FLAG = False
+
 
 def main():
     while True:
@@ -16,7 +17,7 @@ def main():
             print("\tVideo is Live")
             viewer = Viewer(ACCOUNT_ID, video_player["video"]['id'], video_player["uid"], contenders=CONTENDERS_FLAG)
             try:
-                while viewer.send_sentinel_packets(): 
+                while viewer.send_sentinel_packets():
                     print(".", end="", flush=True)
                     time.sleep(60)
                     viewer.time_watched += 1
@@ -27,6 +28,7 @@ def main():
 
         print("Sleeping for now")
         time.sleep(MIN_BETWEEN_CHECKS * 60)
+
 
 if __name__ == "__main__":
     main()

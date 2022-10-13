@@ -1,18 +1,20 @@
-import json, time, random
+import json
+import logging
+import random
+import time
 
 # Dependencies
 import requests
 
-import logging
 logger = logging.getLogger(__name__)
 
 
-class Viewer():
+class Viewer:
 
     TRACKING_OWL = "https://pk0yccosw3.execute-api.us-east-2.amazonaws.com/production/v2/sentinel-tracking/owl"
     TRACKING_OWC = "https://pk0yccosw3.execute-api.us-east-2.amazonaws.com/production/v2/sentinel-tracking/contenders"
 
-    CONNECT_TIMEOUT = 5  
+    CONNECT_TIMEOUT = 5
     READ_TIMEOUT = 10
 
     USER_AGENTS = [
@@ -24,17 +26,16 @@ class Viewer():
         'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:102.0) Gecko/20100101 Firefox/102.0',
         'Mozilla/5.0 (X11; Fedora; Linux x86_64; rv:102.0) Gecko/20100101 Firefox/100.0'
     ]
-    
-    def __init__(self, accountid, videoid, eventid, contenders=False):
+
+    def __init__(self, account_id, video_id, event_id, contenders=False):
         self.session = requests.Session()
-        self.__set_headers() 
+        self.__set_headers()
         self.time_watched = 0
-        self.accountid = accountid
-        self.videoid = videoid
-        self.eventid = eventid
+        self.account_id = account_id
+        self.video_id = video_id
+        self.event_id = event_id
         self.contenders = contenders
         self.url = self.TRACKING_OWC if contenders else self.TRACKING_OWL
-        
 
     def __set_headers(self):
         user_agent = random.choice(self.USER_AGENTS)
@@ -47,11 +48,11 @@ class Viewer():
             'Connection': 'keep-alive',
             'Pragma': 'no-cache',
             'Cache-Control': 'no-cache',
-            'TE': 'Trailers',    
+            'TE': 'Trailers',
         })
-    
+
     def fake_view_loop(self):
-        while self.send_sentinel_packets(): 
+        while self.send_sentinel_packets():
             time.sleep(60)
             self.time_watched += 1
         return self.time_watched
@@ -74,7 +75,7 @@ class Viewer():
         if resd["data"]["continueTracking"]:
             return True
         return False
-    
+
     def restart_session(self):
         self.session = requests.Session()
         self.__set_headers()
@@ -86,7 +87,7 @@ class Viewer():
             'Access-Control-Request-Headers': 'content-type,x-origin'
         }
 
-        response = self.session.options(self.url, headers=headers, timeout=(self.CONNECT_TIMEOUT,self.READ_TIMEOUT))
+        response = self.session.options(self.url, headers=headers, timeout=(self.CONNECT_TIMEOUT, self.READ_TIMEOUT))
         return response
 
     def __send_post_packet(self):
@@ -97,18 +98,19 @@ class Viewer():
         }
 
         data = {
-            "accountId": str(self.accountid),
-            "videoId": self.videoid,
+            "accountId": str(self.account_id),
+            "videoId": self.video_id,
             "type": "video_player",
-            "entryId": self.eventid,
+            "entryId": self.event_id,
             "liveTest": False,
             "locale": "en-us",
             "timestamp": int(time.time()),
             "contentType": "live",
             "id_type": "battleNetId"
-            }
+        }
         logger.debug(data)
-        response = self.session.post(self.url, headers=headers, data=json.dumps(data), timeout=(self.CONNECT_TIMEOUT, self.READ_TIMEOUT))
+        response = self.session.post(self.url, headers=headers, data=json.dumps(data),
+                                     timeout=(self.CONNECT_TIMEOUT, self.READ_TIMEOUT))
         return response
 
 
@@ -117,18 +119,24 @@ class ViewerStatusCodeError(Exception):
     def __init__(self, response):
         super().__init__(self)
         self.response = response
-    
+
     def __str__(self):
         return f"Bad Response: {self.response}"
 
 
-if __name__ == "__main__":
-    accountid = ""
-    videoid = ""
-    OWC_EVENT_ID = "blt942744e48c33cdc9"
-    OWL_EVENT_ID = "bltfed4276975b6d58a"
-    watcher = Viewer(accountid, videoid, OWC_EVENT_ID)
+def main():
+    account_id = ""
+    video_id = ""
+    owc_event_id = "blt942744e48c33cdc9"
+    watcher = Viewer(account_id, video_id, owc_event_id)
+    r = watcher.send_sentinel_packets()
+    print(r)
+
+    owl_event_id = "bltfed4276975b6d58a"
+    watcher = Viewer(account_id, video_id, owl_event_id)
     r = watcher.send_sentinel_packets()
     print(r)
 
 
+if __name__ == "__main__":
+    main()

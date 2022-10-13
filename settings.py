@@ -1,16 +1,14 @@
-from PyQt5.QtWidgets import *
-from PyQt5.QtGui import *
-from PyQt5.QtCore import *
-
-import json
-from json import JSONDecodeError
 import dataclasses
+import json
+import logging
+import os
 from dataclasses import dataclass
+from json import JSONDecodeError
 from typing import Optional
 
-import os
+from PyQt5.QtGui import *
+from PyQt5.QtWidgets import *
 
-import logging
 logger = logging.getLogger(__name__)
 
 
@@ -39,7 +37,7 @@ class Urls:
 
 class Actions:
     """ Helper static class to improve code readability when using Actions (decode string).
-    Works as a enum (but not one)"""
+    Works as an enum (but not one)"""
     nothing = None
     context_menu = 'context_menu'
     test_action = 'test'
@@ -231,15 +229,20 @@ class SettingsDialog(QDialog):
         self.owc_input.stateChanged.connect(lambda state: self.settings.set('owc', True if state else False))
         self.min_check_input.valueChanged.connect(lambda value: self.settings.set('min_check', value))
         self.force_track.stateChanged.connect(lambda state: self.settings.set('force_track', True if state else False))
-        self.left_click_input.activated.connect(lambda index: self.settings.set('left_click', self.left_click_input.itemData(index)))
-        self.middle_click_input.activated.connect(lambda index: self.settings.set('middle_click', self.middle_click_input.itemData(index)))
+        self.left_click_input.activated.connect(
+            lambda index: self.settings.set('left_click', self.left_click_input.itemData(index)))
+        self.middle_click_input.activated.connect(
+            lambda index: self.settings.set('middle_click', self.middle_click_input.itemData(index)))
 
 
-if __name__ == "__main__":
+def main():
     import os
     settings = SettingsManager('config.json')
-    app = QApplication([])
     icon_owl = QIcon(os.path.join("icons", "iconowl.png"))
     dialog = SettingsDialog(icon_owl, settings)
     print(Urls.owl.main)
     dialog.exec_()
+
+
+if __name__ == "__main__":
+    main()

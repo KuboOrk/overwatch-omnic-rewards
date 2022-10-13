@@ -1,23 +1,35 @@
+import logging
+import os
+import platform
+
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
-import logging
-import os
-import platform
-import sys
-
 from accountdialog import AccountDialog
 from checkviewer import CheckViewer
-from settings import SettingsManager, SettingsDialog, Actions, Urls
+from settings import Actions, SettingsDialog, SettingsManager, Urls
 from stats import Stats, StatsDialog
-
-import resources_qc
 
 logger = logging.getLogger(__name__)
 
 
 class SystemTray(QSystemTrayIcon):
+    check_viewer: CheckViewer
+    account_dialog: AccountDialog
+    thread: QThread
+    quit_action: QAction
+    settings_action: QAction
+    stats_action: QAction
+    shutdown_action: QAction
+    checknow_action: QAction
+    account_action: QAction
+    status_action: QAction
+    menu: QMenu
+    icon_error: QIcon
+    icon_owc: QIcon
+    icon_owl: QIcon
+    icon_disabled: QIcon
     exit_signal = pyqtSignal(bool)
 
     def __init__(self, settings: SettingsManager, stats: Stats, quiet_mode=False, parent=None):
@@ -258,7 +270,7 @@ class SystemTray(QSystemTrayIcon):
     def show_settings(self):
         logger.info("Opening settings dialog")
         # Debug current widgets (useful for memory leaks
-        #print(list(filter(lambda x: isinstance(x, SettingsDialog), QApplication.allWidgets())))
+        # print(list(filter(lambda x: isinstance(x, SettingsDialog), QApplication.allWidgets())))
 
         self.settings_dialog.show()
         self.settings_dialog.raise_()

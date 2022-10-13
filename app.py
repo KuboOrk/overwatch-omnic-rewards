@@ -1,5 +1,4 @@
 from PyQt5.QtWidgets import *
-from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 
 import argparse
@@ -17,6 +16,7 @@ logger = logging.getLogger(__name__)
 
 APPLICATION_NAME = "overwatch-omnic-rewards"
 APPLICATION_VERSION = "1.3.3"
+
 
 def main():
     # Arg Parser and Logging
@@ -70,6 +70,7 @@ def main():
 
     app.exec_()
 
+
 def arg_parse():
     parser = argparse.ArgumentParser()
     group = parser.add_mutually_exclusive_group()
@@ -81,9 +82,9 @@ def arg_parse():
                         help="Debug Mode. Switches URL's endpoints to local ones for testing. See docs",
                         action="store_true")
     parser.add_argument("-cf", "--config", default="config.json",
-                       help="Specify config file. Needs to be in the same dir as app")
+                        help="Specify config file. Needs to be in the same dir as app")
     parser.add_argument("-hf", "--history", default="history.{}.csv",
-                       help="Specify history file. Needs to be in the same dir as app")
+                        help="Specify history file. Needs to be in the same dir as app")
     parser.add_argument("-c", "--cli", help="Command Line mode. No system tray", action="store_true")
 
     options, qt_args = parser.parse_known_args()
@@ -132,6 +133,7 @@ def get_application_path() -> str:
         return os.path.dirname(sys.executable)
     elif __file__:
         return os.path.dirname(__file__)
+
 
 def set_local_urls():
     logger.info("Using Local endpoints")

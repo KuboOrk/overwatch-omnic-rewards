@@ -1,6 +1,4 @@
 from PyQt5.QtCore import *
-from PyQt5.QtWidgets import *
-from PyQt5.QtGui import *
 
 import requests
 
@@ -8,6 +6,7 @@ import utils.checker as checker
 from utils.viewer import Viewer, ViewerStatusCodeError
 
 import logging
+
 logger = logging.getLogger(__name__)
 
 
@@ -20,6 +19,10 @@ class CheckViewer(QObject):
     false_tracking = pyqtSignal(bool)
     exit_signal = pyqtSignal()
 
+    viewer = None
+    viewer_title = None
+    contenders = None
+
     def __init__(self, userid=None, owl_flag=True, owc_flag=True, min_check=10, force_rewards=False):
         super().__init__()
         logger.info(f"{userid}: Starting checkviewer")
@@ -30,13 +33,13 @@ class CheckViewer(QObject):
         self.owl_flag = owl_flag
         self.owc_flag = owc_flag
         self.force_rewards = force_rewards
+        self.watcher_timer = QTimer()
+        self.check_timer = QTimer()
 
     def run(self):
         # Create QTimers
-        self.watcher_timer = QTimer()
         self.watcher_timer.setInterval(60000)
         self.watcher_timer.timeout.connect(self.watch)
-        self.check_timer = QTimer()
         self.check_timer.setInterval(60000)
         self.check_timer.timeout.connect(self.timeout_check_timer)
         if self.userid:
@@ -106,21 +109,23 @@ class CheckViewer(QObject):
         logger.info(f"{self.userid}: Checking if live")
         self.checking.emit()
         try:
-            if self.owl_flag and (video_player_owl := checker.check_page_islive(contenders=False, ignore_rewards=self.force_rewards)):
+            if self.owl_flag and (
+                    video_player_owl := checker.check_page_islive(contenders=False, ignore_rewards=self.force_rewards)):
                 logger.info(f"{self.userid}: OWL is Live")
                 self.start_watching(video_player_owl, False)
-            elif self.owc_flag and (video_player_owc := checker.check_page_islive(contenders=True, ignore_rewards=self.force_rewards)):
+            elif self.owc_flag and (
+                    video_player_owc := checker.check_page_islive(contenders=True, ignore_rewards=self.force_rewards)):
                 logger.info(f"{self.userid}: OWC is live")
                 self.start_watching(video_player_owc, True)
             else:
                 self.check_progress.emit(self.min_check, self.userid)
-        except requests.exceptions.Timeout as errt:
+        except requests.exceptions.Timeout:
             logger.error(f"{self.userid}: Checker Timeout error")
             self.error.emit(f"{self.userid}: Checker timeout'ed", False)
         except requests.exceptions.HTTPError as errh:
             logger.error(f"{self.userid}: Checker HTTP error - {errh.response.status_code}")
             self.error.emit(f"{self.userid}: Checker HTTP error - {errh.response.status_code}", True)
-        except requests.exceptions.ConnectionError as errc:
+        except requests.exceptions.ConnectionError:
             logger.error(f"{self.userid}: Checker ConnectionError")
             self.error.emit(f"{self.userid}: Couldn't connect - Check internet", False)
         except requests.exceptions.RequestException as err:
@@ -149,7 +154,7 @@ class CheckViewer(QObject):
         logger.info(f"{self.userid}: Sending sentinel packets")
         try:
             tracking_status = self.viewer.send_sentinel_packets()
-        except requests.exceptions.Timeout as errt:
+        except requests.exceptions.Timeout:
             logger.error(f"{self.userid}: Watcher Timeout error")
             self.error.emit(f"{self.userid}: Watcher timeout'ed", False)
             self.viewer.restart_session()
@@ -159,7 +164,7 @@ class CheckViewer(QObject):
             self.error.emit(f"{self.userid}: Watcher HTTP error - {errh.response.status_code}", True)
             self.watcher_timer.stop()
             self.start_check_timer(check=False)
-        except requests.exceptions.ConnectionError as errc:
+        except requests.exceptions.ConnectionError:
             logger.error(f"{self.userid}: Watcher ConnectionError")
             self.error.emit(f"{self.userid}: Couldn't connect - Check internet", False)
             self.watcher_timer.stop()

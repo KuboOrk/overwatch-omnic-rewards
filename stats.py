@@ -1,6 +1,6 @@
-import os
 import csv
 import logging
+import os
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 
@@ -82,6 +82,8 @@ class Stats(QObject):
 
 class StatsDialog(QDialog):
 
+    stats: Stats
+
     def __init__(self, stats: Stats, icon_owl: QIcon, icon_owc: QIcon, accountid=None, parent=None):
         super().__init__(parent)
 
@@ -162,7 +164,7 @@ class StatsDialog(QDialog):
         self.activateWindow()
 
         self.stats.changed.connect(self._update_values)
-        # This below causes crashes due to finished signal returning a int
+        # This below causes crashes due to finished signal returning an int
         # self.finished.connect(self.stats.changed.disconnect)
         # Use lambda to ignore int returned from finished signal
         self.finished.connect(lambda x: self.stats.changed.disconnect)
@@ -172,26 +174,27 @@ class StatsDialog(QDialog):
         stats_owl, stats_owc = self._get_stats_summary(self.stats_account)
         self._replace_values(stats_owl, stats_owc, self.stats_account)
 
-    def _get_stats_summary(self, accountid: str):
+    def _get_stats_summary(self, account_id: str):
         stats_data = []
 
-        if self.stats.record:
+        record = self.stats.get_records().get(account_id)
+        if record:
             stats_data.append(
                 {
                     'Timestamp': datetime.now().astimezone().isoformat(),
-                    'Account': self.stats.record.account_id,
-                    'Type': 'owc' if self.stats.record.contenders else 'owl',
-                    'Title': self.stats.record.title,
-                    'Minutes': self.stats.record.min_watched
+                    'Account': record.account_id,
+                    'Type': 'owc' if record.contenders else 'owl',
+                    'Title': record.title,
+                    'Minutes': record.min_watched
                 })
 
-        file_path = self.file_path.format(accountid)
+        file_path = self.stats.file_path.format(account_id)
         if os.path.isfile(file_path):
             with open(file_path, 'r', newline='') as history_file:
                 stats_data.extend(csv.DictReader(history_file))
                 logger.debug("Loaded history file")
 
-        stats_owl, stats_owc = self._process_data(stats_data, accountid)
+        stats_owl, stats_owc = self._process_data(stats_data, account_id)
 
         return stats_owl, stats_owc
 
@@ -252,12 +255,10 @@ class StatsDialog(QDialog):
         self.inner_layout.itemAtPosition(8, 3).widget().setText(str(round(stats_owc[2] / 60, 2)) + "h")
 
 
-if __name__ == "__main__":
+def main():
     logging.basicConfig(level=logging.INFO)
 
     app = QApplication([])
-    icon_owl = QIcon(os.path.join("icons", "iconowl.png"))
-    icon_owc = QIcon(os.path.join("icons", "iconowc.png"))
 
     test_accountid = "123456789"
     stats = Stats('history.123456789.csv')
@@ -267,3 +268,7 @@ if __name__ == "__main__":
     stats.write_records()
 
     app.exec_()
+
+
+if __name__ == "__main__":
+    main()

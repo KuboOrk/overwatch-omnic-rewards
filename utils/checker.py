@@ -7,17 +7,18 @@ from lxml import html
 OWL_URL = "https://overwatchleague.com/en-us/"
 OWC_URL = "https://overwatchleague.com/en-us/contenders"
 
-CONNECT_TIMEOUT = 5 
+CONNECT_TIMEOUT = 5
 READ_TIMEOUT = 10
 
-def check_page_islive(contenders = False, ignore_rewards=True):
+
+def check_page_islive(contenders=False, ignore_rewards=True):
     # Select correct url
     url = OWL_URL
     if contenders:
         url = OWC_URL
 
     # Get Request
-    r = requests.get(url, timeout=(CONNECT_TIMEOUT,READ_TIMEOUT))
+    r = requests.get(url, timeout=(CONNECT_TIMEOUT, READ_TIMEOUT))
     r.raise_for_status()
 
     # Parse response
@@ -33,7 +34,7 @@ def check_page_islive(contenders = False, ignore_rewards=True):
     try:
         if not ignore_rewards and video_player["videoLogin"][0]["enableSentinelTracking"] == 'None':
             return
-    except:
+    except Exception:
         pass
 
     if video_player["video"]:
@@ -42,6 +43,7 @@ def check_page_islive(contenders = False, ignore_rewards=True):
 
     return
 
+
 if __name__ == "__main__":
     print(check_page_islive())
-    #print(check_page_islive(contenders=True))
+    # print(check_page_islive(contenders=True))

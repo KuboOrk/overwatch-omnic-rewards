@@ -1,6 +1,4 @@
 from PyQt5.QtCore import *
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
 
 import logging
 import sys
@@ -18,16 +16,16 @@ class CLIApp(QObject):
         self.settings = settings
         self.stats = stats
 
-        accountIds = self.settings.get("account")
-        if not accountIds:
+        account_ids = self.settings.get("account")
+        if not account_ids:
             logger.error("No account set. Please setup and account on config.json or through the GUI")
             sys.exit(1)
 
-        if type(accountIds) != list:
-            accountIds = list(accountIds)
+        if type(account_ids) != list:
+            account_ids = list(account_ids)
 
         self.check_viewers = list()
-        for account in accountIds:
+        for account in account_ids:
             check_viewer = CheckViewer(
                 account,
                 owl_flag=self.settings.get("owl"),
@@ -44,28 +42,29 @@ class CLIApp(QObject):
             self.check_viewers.append(check_viewer)
 
     @pyqtSlot(int, str)
-    def update_check_progress(self, min_remaining=None, accountId=""):
+    def update_check_progress(self, min_remaining=None, account_id=""):
         if min_remaining:
-            logger.debug(f"id: {accountId}: Not Live - {min_remaining}min until next check")
+            logger.debug(f"id: {account_id}: Not Live - {min_remaining}min until next check")
 
     @pyqtSlot(str, int, str, bool)
-    def update_watching_owl(self, accountId, min_watching, title, end):
-        self.stats.set_record(False, min_watching, title, accountId)
+    def update_watching_owl(self, account_id, min_watching, title, end):
+        self.stats.set_record(False, min_watching, title, account_id)
         if not end:
-            logger.info(f"{accountId}: Watching OWL for {min_watching}min")
+            logger.info(f"{account_id}: Watching OWL for {min_watching}min")
         else:
-            self.stats.write_record(accountId)
-            logger.info(f"{accountId}: Watched {min_watching}mins of OWL - {title}")
+            self.stats.write_record(account_id)
+            logger.info(f"{account_id}: Watched {min_watching}mins of OWL - {title}")
 
     @pyqtSlot(str, int, str, bool)
-    def update_watching_owc(self, accountId, min_watching, title, end):
-        self.stats.set_record(True, min_watching, title, accountId)
+    def update_watching_owc(self, account_id, min_watching, title, end):
+        self.stats.set_record(True, min_watching, title, account_id)
         if not end:
-            logger.info(f"{accountId}: Watching OWC for {min_watching}min")
+            logger.info(f"{account_id}: Watching OWC for {min_watching}min")
         else:
-            self.stats.write_record(accountId)
-            logger.info(f"{accountId}: Watched {min_watching}mins of OWC - {title}")
+            self.stats.write_record(account_id)
+            logger.info(f"{account_id}: Watched {min_watching}mins of OWC - {title}")
 
+    # noinspection PyUnusedLocal
     @pyqtSlot(str, bool)
     def update_error(self, error_msg, notification):
         self.stats.write_records()
