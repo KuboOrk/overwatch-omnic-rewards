@@ -150,7 +150,7 @@ class SystemTray(QSystemTrayIcon):
     def update_check_progress(self, min_remaining=None):
         self.setIcon(self.icon_disabled)
         if min_remaining:
-            logger.info(f"Not Live - {min_remaining}min until next check")
+            logger.debug(f"Not Live - {min_remaining}min until next check")
             self.status_action.setText(f"Status: Not Live - {min_remaining}min until next check")
             self.checknow_action.setEnabled(True)
             if self.shutdown_flag and min_remaining == self.settings.get('min_check'):

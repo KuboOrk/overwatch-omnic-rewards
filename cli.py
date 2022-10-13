@@ -46,7 +46,7 @@ class CLIApp(QObject):
     @pyqtSlot(int, str)
     def update_check_progress(self, min_remaining=None, accountId=""):
         if min_remaining:
-            logger.info(f"id: {accountId}: Not Live - {min_remaining}min until next check")
+            logger.debug(f"id: {accountId}: Not Live - {min_remaining}min until next check")
 
     @pyqtSlot(str, int, str, bool)
     def update_watching_owl(self, accountId, min_watching, title, end):
