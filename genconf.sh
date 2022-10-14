@@ -1,5 +1,9 @@
 #!/bin/bash
 
+if [ -e config.json ]; then
+  echo "config.json exists"
+else
+
 if [[ -z "${ACCOUNT_ID}" ]]; then
   echo "ACCOUNT_ID must be set"
   exit 1
@@ -17,3 +21,5 @@ cat > config.json << EOL
     "force_track": false
 }
 EOL
+
+fi
